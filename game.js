@@ -245,6 +245,7 @@ function gameOver() {
 
 //键盘事件
 document.onkeydown = function(event) {
+    //在移动前记录原先的状态以用于在状态未改变时不产生新块
     var temp = [];
     var i, j, f = 0;
     for (i = 0; i < 4; i++) {
@@ -254,7 +255,7 @@ document.onkeydown = function(event) {
         }
     }
 
-    /// ???
+    /// 监听键盘事件
     var e = event || window.event || arguments.callee.caller.arguments[0];
 
     if (e && e.keyCode === 38) { //up
@@ -276,36 +277,21 @@ document.onkeydown = function(event) {
         //alert('r');
     }
 
-    // var tm = 0;
-    // for (i = 0; i < 4; i++) {
-    //     for (j = 0; j < 4; j++) {
-    //         if (table[i][j] === -1) {
-    //             tm = 1;
-    //             break;
-    //         }
-    //     }
-    // }
-    //
-    // if (tm === 0) {
-    //     alert("游戏结束");
-    // }
-
     if (gameOver()) {
         alert("Game Over!");
     }
-    //
-    // for (i = 0; i < 4; i++) {
-    //     for (j = 0; j < 4; j++) {
-    //         if (temp[i][j] !== table[i][j]) {
-    //             f = 1;
-    //             break;
-    //         }
-    //     }
-    // }
-    // if (f === 1) {
-    //     creatrec();
-    // }
-    creatrec();
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            if (temp[i][j] !== table[i][j]) {
+                f = 1;
+                break;
+            }
+        }
+    }
+    if (f === 1) {
+        creatrec();
+    }
 };
 
 //初始化
@@ -350,16 +336,4 @@ function init() {
     generateNumber();
     // creatrec();
 
-    // var aa = 0, n;
-    // for (i = 0; i < 5; i++) {
-    //   n = Math.floor(Math.random() * 10) + 1; //生成0-10之间的随机数
-    //   n = (n % 4) + 1; //控制生成数字的大小
-    //   if (aa > 15) //控制数字坐标位置
-    //     break;
-    //   var x = Math.floor(aa / 4);
-    //   var y = aa % 4;
-    //   drawNumber(x, y, n); //绘制数字
-    //   table[y][x] = n;
-    //   aa = aa + Math.floor(Math.random() * 3) + 1;
-    // }
 }
