@@ -56,7 +56,7 @@ function drawBoard() {
     }
 }
 
-// 更新并绘制数字
+// 更新并绘制分数
 function drawScore() {
     var s=0;
     for(var i=0;i<4;i++)
@@ -327,8 +327,8 @@ document.onkeydown = function(event) {
         }
     }
     if (flag === 1) {
-        // creatrec();
-        generateNumber();
+        creatrec();
+        //generateNumber();
         drawScore();
     }
 
