@@ -44,6 +44,10 @@ function drawNumber(i, j, n) {
     }
 }
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 07c64ada2356e9fe9494fc697944ddbf7a1f9e26
 function drawBoard() {
     for (var i = 0; i < 4; ++i) {
         for (var j = 0; j < 4; ++j) {
@@ -56,7 +60,13 @@ function drawBoard() {
     }
 }
 
+<<<<<<< HEAD
 // 更新并绘制分数
+=======
+// 随机生成数字 deprecated
+=======
+//更新并绘制分数
+>>>>>>> 07c64ada2356e9fe9494fc697944ddbf7a1f9e26
 function drawScore() {
     var s=0;
     for(var i=0;i<4;i++)
@@ -75,6 +85,10 @@ function drawScore() {
 }
 
 // 随机生成数字
+<<<<<<< HEAD
+=======
+>>>>>>> upstream/master
+>>>>>>> 07c64ada2356e9fe9494fc697944ddbf7a1f9e26
 function creatrec() {
     var i, j;
     var f = 0;
@@ -316,6 +330,25 @@ document.onkeydown = function(event) {
     if (gameOver()) {
         alert("Game Over!");
     }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    //
+    // for (i = 0; i < 4; i++) {
+    //     for (j = 0; j < 4; j++) {
+    //         if (temp[i][j] !== table[i][j]) {
+    //             f = 1;
+    //             break;
+    //         }
+    //     }
+    // }
+    // if (f === 1) {
+    //     creatrec();
+    // }
+    // creatrec();
+    generateNumber();
+=======
+>>>>>>> 07c64ada2356e9fe9494fc697944ddbf7a1f9e26
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
@@ -330,7 +363,12 @@ document.onkeydown = function(event) {
         generateNumber();
         drawScore();
     }
+<<<<<<< HEAD
  };
+=======
+>>>>>>> upstream/master
+};
+>>>>>>> 07c64ada2356e9fe9494fc697944ddbf7a1f9e26
 
 //初始化
 function init() {
