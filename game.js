@@ -11,40 +11,52 @@ var score_x=start_x+container_width*1.2;//分数的x坐标
 var score_y=start_y*1.5;//分数的y坐标
 
 
-//清空
+// 清空
 function clearGrid(i, j) {
     canvas_ctx.fillStyle = '#00FFFF';
     canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
 }
 
-//绘制数字, 在i, j处绘制2的n次方数字
+// 绘制数字, 在i, j处绘制2的n次方数字
 function drawNumber(i, j, n) {
 
     canvas_ctx.fillStyle = color[n % 10];
     canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
 
     var px = 30, py = 70;
-    var s = Math.pow(2, n);
+    var number = Math.pow(2, n);
     canvas_ctx.fillStyle = '#000000';
     // 针对不同的幂使用不同大小的字体
     if (n > 6) {
         if (n > 9) {
             canvas_ctx.font = "40px 宋体";
-            canvas_ctx.fillText(s, start_x + grid_width * i + px - 20, start_y + grid_width * j + py - 10);
+            canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px - 20, start_y + grid_width * j + py - 10);
         } else {
             canvas_ctx.font = "45px 宋体";
-            canvas_ctx.fillText(s, start_x + grid_width * i + px - 15, start_y + grid_width * j + py - 10);
+            canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px - 15, start_y + grid_width * j + py - 10);
         }
     } else if (n < 4) {
         canvas_ctx.font = "60px 宋体";
-        canvas_ctx.fillText(s, start_x + grid_width * i + px, start_y + grid_width * j + py);
+        canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px, start_y + grid_width * j + py);
     } else {
         canvas_ctx.font = "50px 宋体";
-        canvas_ctx.fillText(s, start_x + grid_width * i + px - 10, start_y + grid_width * j + py - 10);
+        canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px - 10, start_y + grid_width * j + py - 10);
     }
 }
 
-//更新并绘制分数
+function drawBoard() {
+    for (var i = 0; i < 4; ++i) {
+        for (var j = 0; j < 4; ++j) {
+            if (table[i][j] === -1) {
+                clearGrid(j, i);
+            } else {
+                drawNumber(j, i, table[i][j]);
+            }
+        }
+    }
+}
+
+// 更新并绘制数字
 function drawScore() {
     var s=0;
     for(var i=0;i<4;i++)
@@ -96,9 +108,7 @@ function generateNumber() {
         }
     }
 
-    if (emptyTable.length === 0) {
-        alert("Game Over!");
-    } else {
+    if (emptyTable.length !== 0) {
         var k = parseInt(Math.random() * emptyTable.length);
         var p = parseInt(Math.random() * 2)+1;
         // todo: update construction
@@ -139,32 +149,33 @@ function upupdate() {
 
         for (i = 0; i < 4; i++) {
             table[i][j] = temp[i];
-            if (table[i][j] > -1) {
-                drawNumber(j, i, table[i][j]);
-            }
-            else {
-                clearGrid(j, i);
-            }
+            // if (table[i][j] > -1) {
+            //     drawNumber(j, i, table[i][j]);
+            // }
+            // else {
+            //     clearGrid(j, i);
+            // }
         }
     }
+    drawBoard();
 }
 
 function downupdate() {
     var i, j, k;
-    var sa2 = new Array();
+    var sa2 = [];
 
     for (j = 0; j < 4; j++) {
         var p = 0;
         for (i = 0; i < 4; i++)
             sa2[i] = -1;
         for (i = 0; i < 4; i++)
-            if (table[3 - i][j] != -1) {
+            if (table[3 - i][j] !== -1) {
                 sa2[p] = table[3 - i][j];
                 p++;
             }
         sa2[p] = -1;
         for (i = 0; i < p - 1; i++)
-            if (sa2[i] == sa2[i + 1] && sa2[i] > -1) {
+            if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
                 sa2[i] = sa2[i] + 1;
                 for (k = i + 1; k < 3; k++) {
                     sa2[k] = sa2[k + 1];
@@ -173,30 +184,32 @@ function downupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[3 - i][j] = sa2[i];
-            if (table[3 - i][j] > -1)
-                drawNumber(j, 3 - i, table[3 - i][j]);
-            else
-                clearGrid(j, 3 - i);
+            // if (table[3 - i][j] > -1)
+            //     drawNumber(j, 3 - i, table[3 - i][j]);
+            // else
+            //     clearGrid(j, 3 - i);
         }
     }
+    drawBoard();
 }
 
+// todo: drawBoard
 function leftupdate() {
     var i, j, k;
-    var sa2 = new Array();
+    var sa2 = [];
 
     for (j = 0; j < 4; j++) {
         var p = 0;
         for (i = 0; i < 4; i++)
             sa2[i] = -1;
         for (i = 0; i < 4; i++)
-            if (table[j][i] != -1) {
+            if (table[j][i] !== -1) {
                 sa2[p] = table[j][i];
                 p++;
             }
         sa2[p] = -1;
         for (i = 0; i < p - 1; i++)
-            if (sa2[i] == sa2[i + 1] && sa2[i] > -1) {
+            if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
                 sa2[i] = sa2[i] + 1;
                 for (k = i + 1; k < 3; k++) {
                     sa2[k] = sa2[k + 1];
@@ -205,14 +218,16 @@ function leftupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[j][i] = sa2[i];
-            if (table[j][i] > -1)
-                drawNumber(i, j, table[j][i]);
-            else
-                clearGrid(i, j);
+            // if (table[j][i] > -1)
+            //     drawNumber(i, j, table[j][i]);
+            // else
+            //     clearGrid(i, j);
         }
     }
+    drawBoard();
 }
 
+// todo: drawBoard
 function rightupdate() {
     var i, j, k;
     var sa2 = [];
@@ -222,13 +237,13 @@ function rightupdate() {
         for (i = 0; i < 4; i++)
             sa2[i] = -1;
         for (i = 0; i < 4; i++)
-            if (table[j][3 - i] != -1) {
+            if (table[j][3 - i] !== -1) {
                 sa2[p] = table[j][3 - i];
                 p++;
             }
         sa2[p] = -1;
         for (i = 0; i < p - 1; i++)
-            if (sa2[i] == sa2[i + 1] && sa2[i] > -1) {
+            if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
                 sa2[i] = sa2[i] + 1;
                 for (k = i + 1; k < 3; k++) {
                     sa2[k] = sa2[k + 1];
@@ -237,12 +252,13 @@ function rightupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[j][3 - i] = sa2[i];
-            if (table[j][3 - i] > -1)
-                drawNumber(3 - i, j, table[j][3 - i]);
-            else
-                clearGrid(3 - i, j);
+            // if (table[j][3 - i] > -1)
+            //     drawNumber(3 - i, j, table[j][3 - i]);
+            // else
+            //     clearGrid(3 - i, j);
         }
     }
+    drawBoard();
 }
 
 function gameOver() {
@@ -265,9 +281,9 @@ function gameOver() {
 
 //键盘事件
 document.onkeydown = function(event) {
-    //在移动前记录原先的状态以用于在状态未改变时不产生新块
+    // 在移动前记录原先的状态以用于在状态未改变时不产生新块
     var temp = [];
-    var i, j, f = 0;
+    var i, j;
     for (i = 0; i < 4; i++) {
         temp[i] = [];
         for (j = 0; j < 4; j++) {
@@ -301,19 +317,23 @@ document.onkeydown = function(event) {
         alert("Game Over!");
     }
 
+    var flag = 0;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (temp[i][j] !== table[i][j]) {
-                f = 1;
+                flag = 1;
                 break;
             }
         }
     }
-    if (f === 1) {
-        creatrec();
+    if (flag === 1) {
+        // creatrec();
+        generateNumber();
         drawScore();
     }
+
 };
+
 
 //初始化
 function init() {
@@ -356,6 +376,10 @@ function init() {
     // 生成初始数字
     generateNumber();
     generateNumber();
-    creatrec();
+    // creatrec();
     drawScore();
+}
+
+function gameLoop() {
+
 }
