@@ -7,6 +7,9 @@ var color = ['red', '#0000FF', '#FFFF00', '#FF00FF', '#C0C0C0', '#8A2BE2', '#B88
 var canvas_node;
 var canvas_ctx;
 var table = []; // table 中记录的是2的幂
+var score_x=start_x+container_width*1.2;//分数的x坐标
+var score_y=start_y*1.5;//分数的y坐标
+
 
 //清空
 function clearGrid(i, j) {
@@ -41,15 +44,33 @@ function drawNumber(i, j, n) {
     }
 }
 
+//更新并绘制分数
+function drawScore() {
+    var s=0;
+    for(var i=0;i<4;i++)
+        for(var j=0;j<4;j++)
+            if(table[i][j]!=-1)
+                s+=Math.pow(2,table[i][j]);
+
+    canvas_ctx.fillStyle = '#FFFFFF';
+    canvas_ctx.fillRect(score_x-10, score_y-60, grid_offset, grid_offset+60);
+
+    canvas_ctx.fillStyle = '#000000';
+    canvas_ctx.font = "40px 宋体";
+    canvas_ctx.fillText("score", score_x, score_y);
+    canvas_ctx.font = "40px 宋体";
+    canvas_ctx.fillText(s, score_x, score_y+60);
+}
+
 // 随机生成数字
 function creatrec() {
     var i, j;
     var f = 0;
-
+    var p=10;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (table[i][j] === -1) {
-                var n = parseInt(Math.random() * 10);
+                var n = parseInt(Math.random() * p);
                 if (n === 0 && f < 4) {
                     table[i][j] = parseInt(Math.random() * 2) + 1;
                     drawNumber(j, i, table[i][j]);
@@ -62,7 +83,6 @@ function creatrec() {
 
 // 在空余的地方随机生成一个数字
 function generateNumber() {
-    var pow = [1, 2, 3, 4];
     var emptyTable = [];
     var i, j, s = 0;
     for (i = 0; i < 4; ++i) {
@@ -80,10 +100,10 @@ function generateNumber() {
         alert("Game Over!");
     } else {
         var k = parseInt(Math.random() * emptyTable.length);
-        var p = parseInt(Math.random() * 4);
+        var p = parseInt(Math.random() * 2)+1;
         // todo: update construction
-        table[emptyTable[k][0]][emptyTable[k][1]] = pow[p];
-        drawNumber(emptyTable[k][1], emptyTable[k][0], pow[p]);
+        table[emptyTable[k][0]][emptyTable[k][1]] = p;
+        drawNumber(emptyTable[k][1], emptyTable[k][0], p);
     }
 }
 
@@ -291,6 +311,7 @@ document.onkeydown = function(event) {
     }
     if (f === 1) {
         creatrec();
+        drawScore();
     }
 };
 
@@ -334,6 +355,7 @@ function init() {
 
     // 生成初始数字
     generateNumber();
-    // creatrec();
-
+    generateNumber();
+    creatrec();
+    drawScore();
 }
