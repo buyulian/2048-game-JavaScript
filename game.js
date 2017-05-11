@@ -3,24 +3,62 @@ var start_y = 50; // 距离top
 var container_width = 400; // canvas 宽度
 var grid_width = 100; // 小方块宽度
 var grid_offset = grid_width - 3; // 实际绘制宽度
-var color = ['red', '#0000FF', '#FFFF00', '#FF00FF', '#C0C0C0', '#8A2BE2', '#B8860B', '#4B0082', '#FF6FFF', '#800000'];
+var colors = ['red', '#0000FF', '#FFFF00', '#FF00FF', '#C0C0C0', '#8A2BE2', '#B8860B', '#4B0082', '#FF6FFF', '#800000'];
 var canvas_node;
 var canvas_ctx;
 var table = []; // table 中记录的是2的幂
-var score_x=start_x+container_width*1.2;//分数的x坐标
-var score_y=start_y*1.5;//分数的y坐标
+var score_x = start_x + container_width * 1.2;//分数的x坐标
+var score_y = start_y * 1.5;//分数的y坐标
 
+function Grid(x, y, n) {
 
-// 清空
+    this.x = x;
+    this.y = y;
+    this.number = n;
+    this.color = "black";
+
+    this.rendering = function () {
+        canvas_ctx.fillStyle = colors[this.number % 10];
+        canvas_ctx.fillRect(start_x + this.x, start_y + this.y, grid_offset, grid_offset);
+
+        var px = 30, py = 70;
+        var number = Math.pow(2, this.number);
+        canvas_ctx.fillStyle = '#000000';
+
+        // 针对不同的幂使用不同大小的字体
+        if (this.number > 6) {
+            if (this.number > 9) {
+                canvas_ctx.font = "40px 宋体";
+                canvas_ctx.fillText(number.toString(), start_x + this.x + px - 20, start_y + this.y + py - 10);
+            } else {
+                canvas_ctx.font = "45px 宋体";
+                canvas_ctx.fillText(number.toString(), start_x + this.x + px - 15, start_y + this.y + py - 10);
+            }
+        } else if (this.number < 4) {
+            canvas_ctx.font = "60px 宋体";
+            canvas_ctx.fillText(number.toString(), start_x + this.x + px, start_y + this.y + py);
+        } else {
+            canvas_ctx.font = "50px 宋体";
+            canvas_ctx.fillText(number.toString(), start_x + this.x + px - 10, start_y + this.y + py - 10);
+        }
+    };
+
+    this.update = function (dt) {
+        this.x += 2;
+        this.rendering();
+    };
+}
+
+// 清空格子
 function clearGrid(i, j) {
     canvas_ctx.fillStyle = '#00FFFF';
-    canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
+    // canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
 }
 
 // 绘制数字, 在i, j处绘制2的n次方数字
 function drawNumber(i, j, n) {
 
-    canvas_ctx.fillStyle = color[n % 10];
+    canvas_ctx.fillStyle = colors[n % 10];
     canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
 
     var px = 30, py = 70;
@@ -44,41 +82,67 @@ function drawNumber(i, j, n) {
     }
 }
 
+// 绘制棋盘与数字
 function drawBoard() {
-    for (var i = 0; i < 4; ++i) {
-        for (var j = 0; j < 4; ++j) {
-            if (table[i][j] === -1) {
-                clearGrid(j, i);
-            } else {
-                drawNumber(j, i, table[i][j]);
-            }
-        }
+    // 绘制背景
+    canvas_ctx.fillStyle = '#00FFFF';
+    canvas_ctx.fillRect(start_x, start_y, container_width, container_width);
+
+    // 绘制棋盘
+    var i, j;
+    // 横线
+    for (i = 0; i < 5; i++) {
+
+        canvas_ctx.moveTo(start_x, start_y + i * grid_width);
+        canvas_ctx.lineTo(start_x + container_width, start_y + i * grid_width);
+
+        canvas_ctx.lineWidth = 1;
+        canvas_ctx.strokeStyle = '#00FF5F';
+        canvas_ctx.stroke();
     }
+    // 竖线
+    for (i = 0; i < 5; i++) {
+        canvas_ctx.moveTo(start_x + i * grid_width, start_y);
+        canvas_ctx.lineTo(start_x + i * grid_width, start_y + container_width);
+        canvas_ctx.lineWidth = 1;
+        canvas_ctx.strokeStyle = '#00FF5F';
+        canvas_ctx.stroke();
+    }
+
+    // for (i = 0; i < 4; ++i) {
+    //     for (j = 0; j < 4; ++j) {
+    //         if (table[i][j] === -1) {
+    //             clearGrid(j, i);
+    //         } else {
+    //             drawNumber(j, i, table[i][j]);
+    //         }
+    //     }
+    // }
 }
 
-// 更新并绘制数字
+// 更新并绘制分数
 function drawScore() {
-    var s=0;
-    for(var i=0;i<4;i++)
-        for(var j=0;j<4;j++)
-            if(table[i][j]!=-1)
-                s+=Math.pow(2,table[i][j]);
+    var s = 0;
+    for (var i = 0; i < 4; i++)
+        for (var j = 0; j < 4; j++)
+            if (table[i][j] !== -1)
+                s += Math.pow(2, table[i][j]);
 
     canvas_ctx.fillStyle = '#FFFFFF';
-    canvas_ctx.fillRect(score_x-10, score_y-60, grid_offset, grid_offset+60);
+    canvas_ctx.fillRect(score_x - 10, score_y - 60, grid_offset, grid_offset + 60);
 
     canvas_ctx.fillStyle = '#000000';
     canvas_ctx.font = "40px 宋体";
     canvas_ctx.fillText("score", score_x, score_y);
     canvas_ctx.font = "40px 宋体";
-    canvas_ctx.fillText(s, score_x, score_y+60);
+    canvas_ctx.fillText(s, score_x, score_y + 60);
 }
 
 // 随机生成数字
 function creatrec() {
     var i, j;
     var f = 0;
-    var p=10;
+    var p = 10;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (table[i][j] === -1) {
@@ -110,7 +174,7 @@ function generateNumber() {
 
     if (emptyTable.length !== 0) {
         var k = parseInt(Math.random() * emptyTable.length);
-        var p = parseInt(Math.random() * 2)+1;
+        var p = parseInt(Math.random() * 2) + 1;
         // todo: update construction
         table[emptyTable[k][0]][emptyTable[k][1]] = p;
         drawNumber(emptyTable[k][1], emptyTable[k][0], p);
@@ -149,15 +213,8 @@ function upupdate() {
 
         for (i = 0; i < 4; i++) {
             table[i][j] = temp[i];
-            // if (table[i][j] > -1) {
-            //     drawNumber(j, i, table[i][j]);
-            // }
-            // else {
-            //     clearGrid(j, i);
-            // }
         }
     }
-    drawBoard();
 }
 
 function downupdate() {
@@ -184,16 +241,10 @@ function downupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[3 - i][j] = sa2[i];
-            // if (table[3 - i][j] > -1)
-            //     drawNumber(j, 3 - i, table[3 - i][j]);
-            // else
-            //     clearGrid(j, 3 - i);
         }
     }
-    drawBoard();
 }
 
-// todo: drawBoard
 function leftupdate() {
     var i, j, k;
     var sa2 = [];
@@ -218,16 +269,10 @@ function leftupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[j][i] = sa2[i];
-            // if (table[j][i] > -1)
-            //     drawNumber(i, j, table[j][i]);
-            // else
-            //     clearGrid(i, j);
         }
     }
-    drawBoard();
 }
 
-// todo: drawBoard
 function rightupdate() {
     var i, j, k;
     var sa2 = [];
@@ -252,13 +297,8 @@ function rightupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[j][3 - i] = sa2[i];
-            // if (table[j][3 - i] > -1)
-            //     drawNumber(3 - i, j, table[j][3 - i]);
-            // else
-            //     clearGrid(3 - i, j);
         }
     }
-    drawBoard();
 }
 
 function gameOver() {
@@ -280,7 +320,7 @@ function gameOver() {
 }
 
 //键盘事件
-document.onkeydown = function(event) {
+document.onkeydown = function (event) {
     // 在移动前记录原先的状态以用于在状态未改变时不产生新块
     var temp = [];
     var i, j;
@@ -296,76 +336,42 @@ document.onkeydown = function(event) {
 
     if (e && e.keyCode === 38) { //up
         upupdate();
-        //alert('u');
     }
     if (e && e.keyCode === 40) { // down
         downupdate();
-        //alert('d');
-
     }
     if (e && e.keyCode === 37) { // left
         leftupdate();
-        //alert('l');
-
     }
     if (e && e.keyCode === 39) { // right
         rightupdate();
-        //alert('r');
     }
 
     if (gameOver()) {
         alert("Game Over!");
     }
 
-    var flag = 0;
+    var flag = false;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (temp[i][j] !== table[i][j]) {
-                flag = 1;
+                flag = true;
                 break;
             }
         }
     }
-    if (flag === 1) {
-        // creatrec();
-        generateNumber();
-        drawScore();
-    }
 
+    if (flag) {
+        generateNumber();
+    }
 };
 
-
-//初始化
+// 初始化
 function init() {
     canvas_node = document.getElementById("mainCanvas");
     canvas_ctx = canvas_node.getContext("2d");
 
-    // 绘制背景
-    canvas_ctx.fillStyle = '#00FFFF';
-    canvas_ctx.fillRect(start_x, start_y, container_width, container_width);
-
-    // 绘制棋盘
     var i, j;
-    // 横线
-    for (i = 0; i < 5; i++) {
-
-        canvas_ctx.moveTo(start_x, start_y + i * grid_width);
-        canvas_ctx.lineTo(start_x + container_width, start_y + i * grid_width);
-
-        canvas_ctx.lineWidth = 1;
-        canvas_ctx.strokeStyle = '#00FF5F';
-        canvas_ctx.stroke();
-    }
-    // 竖线
-    for (i = 0; i < 5; i++) {
-        canvas_ctx.moveTo(start_x + i * grid_width, start_y);
-        canvas_ctx.lineTo(start_x + i * grid_width, start_y + container_width);
-        canvas_ctx.lineWidth = 1;
-        canvas_ctx.strokeStyle = '#00FF5F';
-        canvas_ctx.stroke();
-    }
-
-    //初始化
     for (i = 0; i < 4; i++) {
         table[i] = [];
         for (j = 0; j < 4; j++) {
@@ -377,9 +383,24 @@ function init() {
     generateNumber();
     generateNumber();
     // creatrec();
-    drawScore();
 }
 
+var grid = new Grid(0, 0, 4);
+// 游戏循环
+var last_time = undefined;
 function gameLoop() {
+    var time = Date.now();
+    if (last_time !== undefined) {
+        console.log(time - last_time);
+    }
 
+    drawBoard();
+    drawScore();
+
+    grid.update(0.1);
+
+    requestAnimationFrame(gameLoop);
+    last_time = time;
 }
+
+window.requestAnimationFrame(gameLoop);
