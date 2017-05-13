@@ -11,6 +11,7 @@ var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = [];
 
+// 格子对象
 function Grid(x, y, n, color) {
     this.x = x;
     this.y = y;
@@ -272,6 +273,7 @@ function generateNumber() {
     }
 }
 
+// 响应按键
 function upUpdate() {
     var i, j, k;
 
@@ -338,7 +340,7 @@ function upUpdate() {
     }
 }
 
-function downupdate() {
+function downUpdate() {
     var i, j, k;
     var sa2 = [];
 
@@ -364,9 +366,43 @@ function downupdate() {
             table[3 - i][j] = sa2[i];
         }
     }
+
+
+    // 格子移动
+    for (j = 0; j < 4; ++j) {
+        var tmp;
+        for (i = 3; i >= 0; --i) {
+            if (grids[i][j] !== null) {
+                // 向下找一个不是null的格子
+                k = i + 1;
+                while (k < 4 && grids[k][j] === null) {
+                    ++k;
+                }
+                if (k === 4) {
+                    tmp = grids[i][j];
+                    grids[i][j] = null;
+                    grids[3][j] = tmp;
+                    grids[3][j].runAction(new MoveBy(0, (k - 1 - i) * grid_width, 0.1));
+                } else {
+                    if (grids[k][j].number === grids[i][j].number) {
+                        tmp = grids[i][j];
+                        grids[i][j] = null;
+                        grids[k][j] = tmp;
+                        grids[k][j].number *= 2;
+                        grids[k][j].runAction(new MoveBy(0, (k - i) * grid_width, 0.1));
+                    } else {
+                        tmp = grids[i][j];
+                        grids[i][j] = null;
+                        grids[k - 1][j] = tmp;
+                        grids[k - 1][j].runAction(new MoveBy(0, (k - 1 - i) * grid_width, 0.1));
+                    }
+                }
+            }
+        }
+    }
 }
 
-function leftupdate() {
+function leftUpdate() {
     var i, j, k;
     var sa2 = [];
 
@@ -392,9 +428,42 @@ function leftupdate() {
             table[j][i] = sa2[i];
         }
     }
+
+    // 格子移动
+    for (i = 0; i < 4; ++i) {
+        var tmp;
+        for (j = 0; j < 4; ++j) {
+            if (grids[i][j] !== null) {
+                // 向左找到一个不是null的格子
+                k = j - 1;
+                while (k > -1 && grids[i][k] === null) {
+                    --k;
+                }
+                if (k === -1) {
+                    tmp = grids[i][j];
+                    grids[i][j] = null;
+                    grids[i][0] = tmp;
+                    grids[i][0].runAction(new MoveBy(-j * grid_width, 0, 0.1));
+                } else {
+                    if (grids[i][k].number === grids[i][j].number) {
+                        tmp = grids[i][j];
+                        grids[i][j] = null;
+                        grids[i][k] = tmp;
+                        grids[i][k].number *= 2;
+                        grids[i][k].runAction(new MoveBy(-(j - k) * grid_width, 0, 0.1));
+                    } else {
+                        tmp = grids[i][j];
+                        grids[i][j] = null;
+                        grids[i][k + 1] = tmp;
+                        grids[i][k + 1].runAction(new MoveBy(-(j - k - 1) * grid_width, 0, 0.1));
+                    }
+                }
+            }
+        }
+    }
 }
 
-function rightupdate() {
+function rightUpdate() {
     var i, j, k;
     var sa2 = [];
 
@@ -418,6 +487,39 @@ function rightupdate() {
             }
         for (i = 0; i < 4; i++) {
             table[j][3 - i] = sa2[i];
+        }
+    }
+
+    // 格子移动
+    for (i = 0; i < 4; ++i) {
+        var tmp;
+        for (j = 3; j >= 0; --j) {
+            if (grids[i][j] !== null) {
+                // 向右找一个不是null的格子
+                k = j + 1;
+                while (k < 4 && grids[i][k] === null) {
+                    ++k;
+                }
+                if (k === 4) {
+                    tmp = grids[i][j];
+                    grids[i][j] = null;
+                    grids[i][3] = tmp;
+                    grids[i][3].runAction(new MoveBy((k - 1 - j) * grid_width, 0, 0.1));
+                } else {
+                    if (grids[i][k].number === grids[i][j].number) {
+                        tmp = grids[i][j];
+                        grids[i][j] = null;
+                        grids[i][k] = tmp;
+                        grids[i][k].number *= 2;
+                        grids[i][k].runAction(new MoveBy((k - j) * grid_width, 0, 0.1));
+                    } else {
+                        tmp = grids[i][j];
+                        grids[i][j] = null;
+                        grids[i][k - 1] = tmp;
+                        grids[i][k - 1].runAction(new MoveBy((k - 1 - j) * grid_width, 0, 0.1));
+                    }
+                }
+            }
         }
     }
 }
@@ -460,13 +562,13 @@ document.onkeydown = function (event) {
         upUpdate();
     }
     if (e && e.keyCode === 40) { // down
-        downupdate();
+        downUpdate();
     }
     if (e && e.keyCode === 37) { // left
-        leftupdate();
+        leftUpdate();
     }
     if (e && e.keyCode === 39) { // right
-        rightupdate();
+        rightUpdate();
     }
 
     if (gameOver()) {
