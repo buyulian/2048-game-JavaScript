@@ -171,10 +171,8 @@ function drawBoard() {
     var i;
     // 横线
     for (i = 0; i < 5; i++) {
-
         canvas_ctx.moveTo(start_x, start_y + i * grid_width);
         canvas_ctx.lineTo(start_x + container_width, start_y + i * grid_width);
-
         canvas_ctx.lineWidth = 1;
         canvas_ctx.strokeStyle = '#00FF5F';
         canvas_ctx.stroke();
@@ -604,12 +602,17 @@ function init() {
 
     // 生成初始数字
     generateNumber();
-    // generateNumber();
+    generateNumber();
+    // window.requestAnimationFrame(gameLoop);
+    setTimeout("gameLoop()", 1000);
 }
 
 // 游戏循环
 var last_time;
 function gameLoop() {
+    // 绘制路径开始
+    canvas_ctx.beginPath();
+
     var time = Date.now();
     var dt;
     if (last_time === undefined) {
@@ -623,5 +626,3 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
     last_time = time;
 }
-
-window.requestAnimationFrame(gameLoop);
