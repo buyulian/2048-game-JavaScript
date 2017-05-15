@@ -10,15 +10,18 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
+var duration = 500;//渲染时间
+var durationFps = duration / 60;
 
 // 格子对象
 function Grid(x, y, n) {
-    this.x = x;
-    this.y = y;
-    this.number = n;
-    this.color = colors[n % 11];
-    this.actions = [];
+    this.x = x;//格子x坐标
+    this.y = y;//格子y坐标
+    this.number = n;//格子的数字
+    this.color = colors[n % 11];//格子的颜色
+    this.actions = [];//动作对象
 
+    //绘制格子
     this.rendering = function () {
         canvas_ctx.fillStyle = this.color;
         canvas_ctx.fillRect(start_x + this.x, start_y + this.y, grid_offset, grid_offset);
@@ -44,6 +47,7 @@ function Grid(x, y, n) {
         }
     };
 
+    //执行动作
     this.executeActions = function (dt) {
         var i = this.actions.length;
         while (i--) {
@@ -54,6 +58,7 @@ function Grid(x, y, n) {
         }
     };
 
+    //设置数字
     this.setNumber = function (number) {
         this.number = number;
         this.color = colors[number % 11];
@@ -68,6 +73,7 @@ function Grid(x, y, n) {
         this.rendering();
     };
 
+    //增加一个动作
     this.runAction = function (actionObj) {
         this.actions.push(actionObj);
     };
@@ -129,8 +135,6 @@ function MoveBy(dx, dy, duration) {
 
 // 清空格子 --abandoned
 function clearGrid(i, j) {
-    // canvas_ctx.fillStyle = '#00FFFF';
-    // canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
     grids[i][j] = null;
 }
 
@@ -185,16 +189,6 @@ function drawBoard() {
         canvas_ctx.strokeStyle = '#00FF5F';
         canvas_ctx.stroke();
     }
-
-    // for (i = 0; i < 4; ++i) {
-    //     for (j = 0; j < 4; ++j) {
-    //         if (table[i][j] === -1) {
-    //             clearGrid(j, i);
-    //         } else {
-    //             drawNumber(j, i, table[i][j]);
-    //         }
-    //     }
-    // }
 }
 
 // 更新并绘制分数
@@ -266,9 +260,6 @@ function generateNumber() {
 
     if (emptyTable.length !== 0) {
         var k = parseInt(Math.random() * emptyTable.length);
-        // var p = parseInt(Math.random() * 3) + 1;
-        // table[emptyTable[k][0]][emptyTable[k][1]] = p;
-        // grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2 << (p - 1));
         grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2);
     }
 }
@@ -277,39 +268,11 @@ function generateNumber() {
 function upUpdate() {
     var i, j, p;
 
-    // var temp = [];
-    // // 计算table
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++) {
-    //         temp[i] = -1;
-    //     }
-    //     for (i = 0; i < 4; i++) {
-    //         if (table[i][j] !== -1) {
-    //             temp[p] = table[i][j];
-    //             p++;
-    //         }
-    //     }
-    //     temp[p] = -1;
-    //     for (i = 0; i < p - 1; i++) {
-    //         if (temp[i] === temp[i + 1] && temp[i] > -1) {
-    //             temp[i] = temp[i] + 1; // 幂+1
-    //             for (k = i + 1; k < 3; k++) {
-    //                 temp[k] = temp[k + 1];
-    //             }
-    //             temp[k] = -1;
-    //         }
-    //     }
-    //     for (i = 0; i < 4; i++) {
-    //         table[i][j] = temp[i];
-    //     }
-    // }
-
     // 格子移动
     for (j = 0; j < 4; ++j) {
         // 聚合
         p = 0;
-        for (i = 1; i < 4; ) {
+        for (i = 1; i < 4;) {
             if (i === p || grids[i][j] === null) {
                 ++i;
                 continue;
@@ -319,12 +282,12 @@ function upUpdate() {
             if (grids[p][j] === null) {
                 grids[p][j] = grids[i][j];
                 grids[i][j] = null;
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 ++i;
             } else if (grids[i][j].number === grids[p][j].number) {
                 // 如果相等
                 grids[p][j] = grids[i][j];
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 grids[p][j].setNumber(grids[p][j].number * 2);
                 grids[i][j] = null;
                 ++i;
@@ -338,37 +301,12 @@ function upUpdate() {
 
 function downUpdate() {
     var i, j, p;
-    // var sa2 = [];
-    //
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++)
-    //         sa2[i] = -1;
-    //     for (i = 0; i < 4; i++)
-    //         if (table[3 - i][j] !== -1) {
-    //             sa2[p] = table[3 - i][j];
-    //             p++;
-    //         }
-    //     sa2[p] = -1;
-    //     for (i = 0; i < p - 1; i++)
-    //         if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
-    //             sa2[i] = sa2[i] + 1;
-    //             for (k = i + 1; k < 3; k++) {
-    //                 sa2[k] = sa2[k + 1];
-    //             }
-    //             sa2[k] = -1;
-    //         }
-    //     for (i = 0; i < 4; i++) {
-    //         table[3 - i][j] = sa2[i];
-    //     }
-    // }
-
 
     // 格子移动
     for (j = 0; j < 4; ++j) {
         // 聚合
         p = 3;
-        for (i = 2; i >= 0; ) {
+        for (i = 2; i >= 0;) {
             if (i === p || grids[i][j] === null) {
                 --i;
                 continue;
@@ -378,12 +316,12 @@ function downUpdate() {
             if (grids[p][j] === null) {
                 grids[p][j] = grids[i][j];
                 grids[i][j] = null;
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 --i;
             } else if (grids[i][j].number === grids[p][j].number) {
                 // 如果相等
                 grids[p][j] = grids[i][j];
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 grids[p][j].setNumber(grids[p][j].number * 2);
                 grids[i][j] = null;
                 --i;
@@ -397,36 +335,12 @@ function downUpdate() {
 
 function leftUpdate() {
     var i, j, p;
-    // var sa2 = [];
-    //
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++)
-    //         sa2[i] = -1;
-    //     for (i = 0; i < 4; i++)
-    //         if (table[j][i] !== -1) {
-    //             sa2[p] = table[j][i];
-    //             p++;
-    //         }
-    //     sa2[p] = -1;
-    //     for (i = 0; i < p - 1; i++)
-    //         if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
-    //             sa2[i] = sa2[i] + 1;
-    //             for (k = i + 1; k < 3; k++) {
-    //                 sa2[k] = sa2[k + 1];
-    //             }
-    //             sa2[k] = -1;
-    //         }
-    //     for (i = 0; i < 4; i++) {
-    //         table[j][i] = sa2[i];
-    //     }
-    // }
 
     // 格子移动
     for (i = 0; i < 4; ++i) {
         // 聚合
         p = 0;
-        for (j = 1; j < 4; ) {
+        for (j = 1; j < 4;) {
             if (j === p || grids[i][j] === null) {
                 ++j;
                 continue;
@@ -436,12 +350,12 @@ function leftUpdate() {
             if (grids[i][p] === null) {
                 grids[i][p] = grids[i][j];
                 grids[i][j] = null;
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 ++j;
             } else if (grids[i][j].number === grids[i][p].number) {
                 // 如果相等
                 grids[i][p] = grids[i][j];
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 grids[i][p].setNumber(grids[i][p].number * 2);
                 grids[i][j] = null;
                 ++j;
@@ -455,36 +369,12 @@ function leftUpdate() {
 
 function rightUpdate() {
     var i, j, p;
-    // var sa2 = [];
-    //
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++)
-    //         sa2[i] = -1;
-    //     for (i = 0; i < 4; i++)
-    //         if (table[j][3 - i] !== -1) {
-    //             sa2[p] = table[j][3 - i];
-    //             p++;
-    //         }
-    //     sa2[p] = -1;
-    //     for (i = 0; i < p - 1; i++)
-    //         if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
-    //             sa2[i] = sa2[i] + 1;
-    //             for (k = i + 1; k < 3; k++) {
-    //                 sa2[k] = sa2[k + 1];
-    //             }
-    //             sa2[k] = -1;
-    //         }
-    //     for (i = 0; i < 4; i++) {
-    //         table[j][3 - i] = sa2[i];
-    //     }
-    // }
 
     // 格子移动
     for (i = 0; i < 4; ++i) {
         // 聚合
         p = 3;
-        for (j = 2; j >= 0; ) {
+        for (j = 2; j >= 0;) {
             if (j === p || grids[i][j] === null) {
                 --j;
                 continue;
@@ -494,12 +384,12 @@ function rightUpdate() {
             if (grids[i][p] === null) {
                 grids[i][p] = grids[i][j];
                 grids[i][j] = null;
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 --j;
             } else if (grids[i][j].number === grids[i][p].number) {
                 // 如果相等
                 grids[i][p] = grids[i][j];
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 grids[i][p].setNumber(grids[i][p].number * 2);
                 grids[i][j] = null;
                 --j;
@@ -519,8 +409,8 @@ function gameOver() {
             if (grids[i][j] === null) {
                 return false;
             } else if ((i < 3 && j < 3) &&
-                       (grids[i + 1][j] !== null && grids[i][j].number === grids[i + 1][j].number ||
-                       (grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number))) {
+                (grids[i + 1][j] !== null && grids[i][j].number === grids[i + 1][j].number ||
+                (grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number))) {
                 return false;
             } else if (i === 3 && j < 3 && grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number) {
                 return false;
@@ -535,14 +425,14 @@ function gameOver() {
 //键盘事件
 document.onkeydown = function (event) {
     // 在移动前记录原先的状态以用于在状态未改变时不产生新块
-    // var temp = [];
-    // var i, j;
-    // for (i = 0; i < 4; i++) {
-    //     temp[i] = [];
-    //     for (j = 0; j < 4; j++) {
-    //         temp[i][j] = table[i][j];
-    //     }
-    // }
+    var temp = [];
+    var i, j;
+    for (i = 0; i < 4; i++) {
+        temp[i] = [];
+        for (j = 0; j < 4; j++) {
+            temp[i][j] = grids[i][j];
+        }
+    }
 
     /// 监听键盘事件
     var e = event || window.event || arguments.callee.caller.arguments[0];
@@ -564,18 +454,16 @@ document.onkeydown = function (event) {
         alert("Game Over!");
     }
 
-    // var flag = false;
-    // for (i = 0; i < 4; i++) {
-    //     for (j = 0; j < 4; j++) {
-    //         if (temp[i][j] !== table[i][j]) {
-    //             flag = true;
-    //             break;
-    //         }
-    //     }
-    // }
+    var flag = false;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            if (temp[i][j] !== grids[i][j]) {
+                flag = true;
+                break;
+            }
+        }
+    }
 
-    // Todo: remember the status when status change generate number.
-    var flag = true;
     if (flag) {
         generateNumber();
     }
@@ -587,12 +475,6 @@ function init() {
     canvas_ctx = canvas_node.getContext("2d");
 
     var i, j;
-    // for (i = 0; i < 4; i++) {
-    //     table[i] = [];
-    //     for (j = 0; j < 4; j++) {
-    //         table[i][j] = -1;
-    //     }
-    // }
 
     for (i = 0; i < 4; ++i) {
         grids[i] = [];
@@ -604,8 +486,9 @@ function init() {
     // 生成初始数字
     generateNumber();
     generateNumber();
-    window.requestAnimationFrame(gameLoop);
+    // window.requestAnimationFrame(gameLoop);
     // setTimeout("gameLoop()", 1000);
+    setInterval("gameLoop()", 16.6);
 }
 
 // 游戏循环
@@ -619,11 +502,11 @@ function gameLoop() {
     if (last_time === undefined) {
         last_time = time;
     }
-    dt = (time - last_time) / 1000;
+    dt = time - last_time;
     drawBoard();
     drawScore();
     drawGrids(dt);
 
+    //requestAnimationFrame(gameLoop);
     last_time = time;
-    requestAnimationFrame(gameLoop);
 }
