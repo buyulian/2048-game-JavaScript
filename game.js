@@ -604,8 +604,8 @@ function init() {
     // 生成初始数字
     generateNumber();
     generateNumber();
-    // window.requestAnimationFrame(gameLoop);
-    setTimeout("gameLoop()", 1000);
+    window.requestAnimationFrame(gameLoop);
+    // setTimeout("gameLoop()", 1000);
 }
 
 // 游戏循环
@@ -624,6 +624,6 @@ function gameLoop() {
     drawScore();
     drawGrids(dt);
 
-    requestAnimationFrame(gameLoop);
     last_time = time;
+    requestAnimationFrame(gameLoop);
 }
