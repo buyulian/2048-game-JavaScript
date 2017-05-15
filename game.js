@@ -10,8 +10,9 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
-var duration=500;//渲染时间
-var durationFps=duration/60;
+var duration = 500;//渲染时间
+var durationFps = duration / 60;
+
 // 格子对象
 function Grid(x, y, n) {
     this.x = x;//格子x坐标
@@ -63,7 +64,6 @@ function Grid(x, y, n) {
         this.color = colors[number % 11];
     };
 
-
     this.update = function (dt) {
 
         // 动作
@@ -72,7 +72,6 @@ function Grid(x, y, n) {
         // 渲染
         this.rendering();
     };
-
 
     //增加一个动作
     this.runAction = function (actionObj) {
@@ -273,7 +272,7 @@ function upUpdate() {
     for (j = 0; j < 4; ++j) {
         // 聚合
         p = 0;
-        for (i = 1; i < 4; ) {
+        for (i = 1; i < 4;) {
             if (i === p || grids[i][j] === null) {
                 ++i;
                 continue;
@@ -307,7 +306,7 @@ function downUpdate() {
     for (j = 0; j < 4; ++j) {
         // 聚合
         p = 3;
-        for (i = 2; i >= 0; ) {
+        for (i = 2; i >= 0;) {
             if (i === p || grids[i][j] === null) {
                 --i;
                 continue;
@@ -341,7 +340,7 @@ function leftUpdate() {
     for (i = 0; i < 4; ++i) {
         // 聚合
         p = 0;
-        for (j = 1; j < 4; ) {
+        for (j = 1; j < 4;) {
             if (j === p || grids[i][j] === null) {
                 ++j;
                 continue;
@@ -375,7 +374,7 @@ function rightUpdate() {
     for (i = 0; i < 4; ++i) {
         // 聚合
         p = 3;
-        for (j = 2; j >= 0; ) {
+        for (j = 2; j >= 0;) {
             if (j === p || grids[i][j] === null) {
                 --j;
                 continue;
@@ -410,8 +409,8 @@ function gameOver() {
             if (grids[i][j] === null) {
                 return false;
             } else if ((i < 3 && j < 3) &&
-                       (grids[i + 1][j] !== null && grids[i][j].number === grids[i + 1][j].number ||
-                       (grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number))) {
+                (grids[i + 1][j] !== null && grids[i][j].number === grids[i + 1][j].number ||
+                (grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number))) {
                 return false;
             } else if (i === 3 && j < 3 && grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number) {
                 return false;
@@ -465,8 +464,6 @@ document.onkeydown = function (event) {
         }
     }
 
-    // Todo: remember the status when status change generate number.
-    //var flag = true;
     if (flag) {
         generateNumber();
     }
@@ -490,8 +487,8 @@ function init() {
     generateNumber();
     generateNumber();
     // window.requestAnimationFrame(gameLoop);
-    //setTimeout("gameLoop()", 1000);
-    setInterval("gameLoop()",16.6);
+    // setTimeout("gameLoop()", 1000);
+    setInterval("gameLoop()", 16.6);
 }
 
 // 游戏循环
