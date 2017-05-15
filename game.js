@@ -10,6 +10,7 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
+var duration=0.1;//渲染时间
 
 // 格子对象
 function Grid(x, y, n) {
@@ -325,12 +326,12 @@ function upUpdate() {
             if (grids[p][j] === null) {
                 grids[p][j] = grids[i][j];
                 grids[i][j] = null;
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 ++i;
             } else if (grids[i][j].number === grids[p][j].number) {
                 // 如果相等
                 grids[p][j] = grids[i][j];
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 grids[p][j].setNumber(grids[p][j].number * 2);
                 grids[i][j] = null;
                 ++i;
@@ -384,12 +385,12 @@ function downUpdate() {
             if (grids[p][j] === null) {
                 grids[p][j] = grids[i][j];
                 grids[i][j] = null;
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 --i;
             } else if (grids[i][j].number === grids[p][j].number) {
                 // 如果相等
                 grids[p][j] = grids[i][j];
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), 0.3));
+                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
                 grids[p][j].setNumber(grids[p][j].number * 2);
                 grids[i][j] = null;
                 --i;
@@ -442,12 +443,12 @@ function leftUpdate() {
             if (grids[i][p] === null) {
                 grids[i][p] = grids[i][j];
                 grids[i][j] = null;
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 ++j;
             } else if (grids[i][j].number === grids[i][p].number) {
                 // 如果相等
                 grids[i][p] = grids[i][j];
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 grids[i][p].setNumber(grids[i][p].number * 2);
                 grids[i][j] = null;
                 ++j;
@@ -500,12 +501,12 @@ function rightUpdate() {
             if (grids[i][p] === null) {
                 grids[i][p] = grids[i][j];
                 grids[i][j] = null;
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 --j;
             } else if (grids[i][j].number === grids[i][p].number) {
                 // 如果相等
                 grids[i][p] = grids[i][j];
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, 0.3));
+                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
                 grids[i][p].setNumber(grids[i][p].number * 2);
                 grids[i][j] = null;
                 --j;
