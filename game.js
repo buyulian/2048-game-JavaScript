@@ -10,8 +10,8 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
-var duration=0.1;//渲染时间
-
+var duration=500;//渲染时间
+var durationFps=duration/60;
 // 格子对象
 function Grid(x, y, n) {
     this.x = x;//格子x坐标
@@ -136,8 +136,6 @@ function MoveBy(dx, dy, duration) {
 
 // 清空格子 --abandoned
 function clearGrid(i, j) {
-    // canvas_ctx.fillStyle = '#00FFFF';
-    // canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
     grids[i][j] = null;
 }
 
@@ -192,16 +190,6 @@ function drawBoard() {
         canvas_ctx.strokeStyle = '#00FF5F';
         canvas_ctx.stroke();
     }
-
-    // for (i = 0; i < 4; ++i) {
-    //     for (j = 0; j < 4; ++j) {
-    //         if (table[i][j] === -1) {
-    //             clearGrid(j, i);
-    //         } else {
-    //             drawNumber(j, i, table[i][j]);
-    //         }
-    //     }
-    // }
 }
 
 // 更新并绘制分数
@@ -273,9 +261,6 @@ function generateNumber() {
 
     if (emptyTable.length !== 0) {
         var k = parseInt(Math.random() * emptyTable.length);
-        // var p = parseInt(Math.random() * 3) + 1;
-        // table[emptyTable[k][0]][emptyTable[k][1]] = p;
-        // grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2 << (p - 1));
         grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2);
     }
 }
@@ -283,34 +268,6 @@ function generateNumber() {
 // 响应按键
 function upUpdate() {
     var i, j, p;
-
-    // var temp = [];
-    // // 计算table
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++) {
-    //         temp[i] = -1;
-    //     }
-    //     for (i = 0; i < 4; i++) {
-    //         if (table[i][j] !== -1) {
-    //             temp[p] = table[i][j];
-    //             p++;
-    //         }
-    //     }
-    //     temp[p] = -1;
-    //     for (i = 0; i < p - 1; i++) {
-    //         if (temp[i] === temp[i + 1] && temp[i] > -1) {
-    //             temp[i] = temp[i] + 1; // 幂+1
-    //             for (k = i + 1; k < 3; k++) {
-    //                 temp[k] = temp[k + 1];
-    //             }
-    //             temp[k] = -1;
-    //         }
-    //     }
-    //     for (i = 0; i < 4; i++) {
-    //         table[i][j] = temp[i];
-    //     }
-    // }
 
     // 格子移动
     for (j = 0; j < 4; ++j) {
@@ -345,31 +302,6 @@ function upUpdate() {
 
 function downUpdate() {
     var i, j, p;
-    // var sa2 = [];
-    //
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++)
-    //         sa2[i] = -1;
-    //     for (i = 0; i < 4; i++)
-    //         if (table[3 - i][j] !== -1) {
-    //             sa2[p] = table[3 - i][j];
-    //             p++;
-    //         }
-    //     sa2[p] = -1;
-    //     for (i = 0; i < p - 1; i++)
-    //         if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
-    //             sa2[i] = sa2[i] + 1;
-    //             for (k = i + 1; k < 3; k++) {
-    //                 sa2[k] = sa2[k + 1];
-    //             }
-    //             sa2[k] = -1;
-    //         }
-    //     for (i = 0; i < 4; i++) {
-    //         table[3 - i][j] = sa2[i];
-    //     }
-    // }
-
 
     // 格子移动
     for (j = 0; j < 4; ++j) {
@@ -404,30 +336,6 @@ function downUpdate() {
 
 function leftUpdate() {
     var i, j, p;
-    // var sa2 = [];
-    //
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++)
-    //         sa2[i] = -1;
-    //     for (i = 0; i < 4; i++)
-    //         if (table[j][i] !== -1) {
-    //             sa2[p] = table[j][i];
-    //             p++;
-    //         }
-    //     sa2[p] = -1;
-    //     for (i = 0; i < p - 1; i++)
-    //         if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
-    //             sa2[i] = sa2[i] + 1;
-    //             for (k = i + 1; k < 3; k++) {
-    //                 sa2[k] = sa2[k + 1];
-    //             }
-    //             sa2[k] = -1;
-    //         }
-    //     for (i = 0; i < 4; i++) {
-    //         table[j][i] = sa2[i];
-    //     }
-    // }
 
     // 格子移动
     for (i = 0; i < 4; ++i) {
@@ -462,30 +370,6 @@ function leftUpdate() {
 
 function rightUpdate() {
     var i, j, p;
-    // var sa2 = [];
-    //
-    // for (j = 0; j < 4; j++) {
-    //     var p = 0;
-    //     for (i = 0; i < 4; i++)
-    //         sa2[i] = -1;
-    //     for (i = 0; i < 4; i++)
-    //         if (table[j][3 - i] !== -1) {
-    //             sa2[p] = table[j][3 - i];
-    //             p++;
-    //         }
-    //     sa2[p] = -1;
-    //     for (i = 0; i < p - 1; i++)
-    //         if (sa2[i] === sa2[i + 1] && sa2[i] > -1) {
-    //             sa2[i] = sa2[i] + 1;
-    //             for (k = i + 1; k < 3; k++) {
-    //                 sa2[k] = sa2[k + 1];
-    //             }
-    //             sa2[k] = -1;
-    //         }
-    //     for (i = 0; i < 4; i++) {
-    //         table[j][3 - i] = sa2[i];
-    //     }
-    // }
 
     // 格子移动
     for (i = 0; i < 4; ++i) {
@@ -594,12 +478,6 @@ function init() {
     canvas_ctx = canvas_node.getContext("2d");
 
     var i, j;
-    // for (i = 0; i < 4; i++) {
-    //     table[i] = [];
-    //     for (j = 0; j < 4; j++) {
-    //         table[i][j] = -1;
-    //     }
-    // }
 
     for (i = 0; i < 4; ++i) {
         grids[i] = [];
@@ -612,7 +490,8 @@ function init() {
     generateNumber();
     generateNumber();
     // window.requestAnimationFrame(gameLoop);
-    setTimeout("gameLoop()", 1000);
+    //setTimeout("gameLoop()", 1000);
+    setInterval("gameLoop()",16.6);
 }
 
 // 游戏循环
@@ -626,11 +505,11 @@ function gameLoop() {
     if (last_time === undefined) {
         last_time = time;
     }
-    dt = (time - last_time) / 1000;
+    dt = time - last_time;
     drawBoard();
     drawScore();
     drawGrids(dt);
 
-    requestAnimationFrame(gameLoop);
+    //requestAnimationFrame(gameLoop);
     last_time = time;
 }
