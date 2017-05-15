@@ -3,7 +3,7 @@ var start_y = 50; // 距离top
 var container_width = 400; // canvas 宽度
 var grid_width = 100; // 小方块宽度
 var grid_offset = grid_width - 3; // 实际绘制宽度
-var colors = ['#FF0000', '#0000FF', '#FFFF00', '#FF00FF', '#C0C0C0', '#8A2BE2', '#B8860B', '#4B0082', '#FF6FFF', '#800000'];
+var colors = ['#FF0000', '#0000FF', '#FFFF00', '#FF00FF', '#C0C0C0', '#8A2BE2', '#B8860B', '#4B0082', '#FF6FFF', '#800000', '#00FF00'];
 var canvas_node;
 var canvas_ctx;
 // var table = []; // table 中记录的是2的幂
@@ -16,7 +16,7 @@ function Grid(x, y, n) {
     this.x = x;
     this.y = y;
     this.number = n;
-    this.color = colors[n % 10]; // Todo: redesign the hash key to match all colors
+    this.color = colors[n % 11];
     this.actions = [];
 
     this.rendering = function () {
@@ -26,7 +26,7 @@ function Grid(x, y, n) {
         var px = 30, py = 70;
         canvas_ctx.fillStyle = '#000000';
 
-        // 针对不同的幂使用不同大小的字体
+        // 针对不同的数字使用不同大小的字体
         if (this.number > 64) {
             if (this.number > 512) {
                 canvas_ctx.font = "40px 宋体";
@@ -56,7 +56,7 @@ function Grid(x, y, n) {
 
     this.setNumber = function (number) {
         this.number = number;
-        this.color = colors[number % 10]; // Todo: redesign the hash key to match all colors
+        this.color = colors[number % 11];
     };
 
     this.update = function (dt) {
@@ -127,7 +127,7 @@ function MoveBy(dx, dy, duration) {
 
 }
 
-// 清空格子
+// 清空格子 --abandoned
 function clearGrid(i, j) {
     // canvas_ctx.fillStyle = '#00FFFF';
     // canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
@@ -241,7 +241,7 @@ function creatrec() {
                 var n = parseInt(Math.random() * p);
                 if (n === 0 && f < 4) {
                     table[i][j] = parseInt(Math.random() * 2) + 1;
-                    drawNumber(j, i, table[i][j]);
+                    // drawNumber(j, i, table[i][j]);
                     f++;
                 }
             }
@@ -266,9 +266,10 @@ function generateNumber() {
 
     if (emptyTable.length !== 0) {
         var k = parseInt(Math.random() * emptyTable.length);
-        var p = parseInt(Math.random() * 3) + 1;
+        // var p = parseInt(Math.random() * 3) + 1;
         // table[emptyTable[k][0]][emptyTable[k][1]] = p;
-        grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2 << (p - 1));
+        // grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2 << (p - 1));
+        grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2);
     }
 }
 
