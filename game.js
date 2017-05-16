@@ -44,6 +44,14 @@ function vector2(x,y) {
         this.y=grid_width*i;
     };
 }
+function log2(n) {
+    var s=0;
+    while (n>1){
+        s++;
+        n/=2;
+    }
+    return s;
+}
 // 格子对象
 function Grid(nowPosition,number) {
     this.nowPosition=nowPosition;//格子目前所在的位置
@@ -51,7 +59,7 @@ function Grid(nowPosition,number) {
     //this.speed=new vector2(0,0);//移动的速度,单位px/ms；
     this.surplusTime=0;//剩余时间
     this.number = number;//格子的数字
-    this.color = colors[number % 11];//格子的颜色
+    this.color = colors[log2(number)%11];//格子的颜色
 
     //dt代表dt时间后，单位毫秒,返回是否到达
     this.moveTime = function (dt) {
@@ -81,7 +89,7 @@ function Grid(nowPosition,number) {
     //设置数字和颜色
     this.setNumber=function (number){
         this.number=number;
-        this.color = colors[this.number % 11];
+        this.color = colors[log2(number)%11];
     }
     //绘制格子
     this.draw = function () {
@@ -179,16 +187,34 @@ function drawGrids(dt) {
 function randomProduceNumber() {
     var i, j;
     var f = 0;
-    var p = 10;
+    var nullGridNumber = 0;//空格子的总数
+    for (i = 0; i < 4; ++i) {
+        for (j = 0; j < 4; ++j) {
+            if (grids[i][j] === null) {
+                nullGridNumber++;
+            }
+        }
+    }
+    var p=12;
+    if(nullGridNumber<=8){
+        p=10;
+        if(nullGridNumber<=4){
+            p=12;
+            if(nullGridNumber<=2){
+                p=6;
+            }
+        }
+    }
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (grids[i][j] ==null) {
                 var n = parseInt(Math.random() * p);
-                if (n === 0 && f < 4) {
+                if (n === 0 && f < 16) {//16代表最多产生的格子数
                     var number=parseInt(Math.random() * 2) + 1;
                     number=Math.pow(2,number);
                     grids[i][j]=new Grid(new vector2(j*grid_width,i*grid_width),number);
                     f++;
+                    p*=4;//下一个格子产生的概率缩小16倍
                 }
             }
         }
@@ -350,13 +376,22 @@ document.onkeydown = function (event) {
     // Todo: remember the status when status change produceOne number.
     //var flag = true;
     if (flag) {
-        //produceOneNumber();
-        randomProduceNumber();
         last_time=null;
+        isComplete=false;
         setTimeout("drawOneFrame()",oneFrameTime);
+        setTimeout("drawNewGrids()",duration*0.2);
     }
 };
-
+function drawNewGrids() {
+    if(isComplete){
+        //produceOneNumber();
+        randomProduceNumber();
+        isComplete=false;
+        setTimeout("drawOneFrame()",oneFrameTime);
+    }else {
+        setTimeout("drawNewGrids()",duration*0.52);
+    }
+}
 // 初始化
 function init() {
     canvas_node = document.getElementById("mainCanvas");
@@ -379,6 +414,7 @@ function init() {
 
 // 游戏循环
 var last_time=null;
+var isComplete=false;
 //绘制一帧图像
 function drawOneFrame() {
     // 绘制路径开始
@@ -393,9 +429,11 @@ function drawOneFrame() {
     console.log(dt);
     drawBoard();//画棋盘
     drawScore();//画分数
-    var isComplete=drawGrids(dt);//画格子
+    isComplete=drawGrids(dt);//画格子
     if(!isComplete){
         setTimeout("drawOneFrame()",oneFrameTime);
+    }else{
+        isComplete=true;
     }
     last_time = time;
 }
