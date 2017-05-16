@@ -10,9 +10,9 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
-var duration=500;//渲染时间
-var fps=100;//每秒刷新率
-var oneFrameTime=1000.0/fps;//每一帧刷新时间
+var duration=200;//渲染时间,单位ms
+var fps=180;//每秒刷新率
+var oneFrameTime=1000.0/fps;//每一帧刷新时间,ms
 var interval;
 
 //二维向量
@@ -175,8 +175,8 @@ function drawGrids(dt) {
     return flag;
 }
 
-// 随机生成数字 --abandoned
-function creatrec() {
+// 随机生成数字
+function randomProduceNumber() {
     var i, j;
     var f = 0;
     var p = 10;
@@ -186,8 +186,8 @@ function creatrec() {
                 var n = parseInt(Math.random() * p);
                 if (n === 0 && f < 4) {
                     var number=parseInt(Math.random() * 2) + 1;
-                    grids[i][j]=new grids(new vector2(i * grid_width, j* grid_width),number);
-                    // drawNumber(j, i, table[i][j]);
+                    number=Math.pow(2,number);
+                    grids[i][j]=new Grid(new vector2(j*grid_width,i*grid_width),number);
                     f++;
                 }
             }
@@ -196,7 +196,7 @@ function creatrec() {
 }
 
 // 在空余的地方随机生成一个数字
-function generateNumber() {
+function produceOneNumber() {
     var emptyTable = [];
     var i, j, s = 0;
     for (i = 0; i < 4; ++i) {
@@ -347,10 +347,11 @@ document.onkeydown = function (event) {
 
         }
     }
-    // Todo: remember the status when status change generate number.
+    // Todo: remember the status when status change produceOne number.
     //var flag = true;
     if (flag) {
-        generateNumber();
+        //produceOneNumber();
+        randomProduceNumber();
         last_time=null;
         setTimeout("drawOneFrame()",oneFrameTime);
     }
@@ -371,8 +372,8 @@ function init() {
     }
 
     // 生成初始数字
-    generateNumber();
-    generateNumber();
+    produceOneNumber();
+    produceOneNumber();
     setTimeout("drawOneFrame()",oneFrameTime);
 }
 
