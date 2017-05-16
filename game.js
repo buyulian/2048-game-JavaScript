@@ -10,21 +10,78 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
-var duration = 500;//渲染时间
-var durationFps = duration / 60;
+var duration=2000;//渲染时间
+var interval;
 
+//二维向量
+function vector2(x,y) {
+    this.x=x;
+    this.y=y;
+
+    this.add=function (b){
+        this.x+=b.x;
+        this.y+=b.y;
+    };
+    this.mul=function (b) {
+        this.x*=b;
+        this.y*=b;
+    };
+    this.sub=function (b) {
+        this.x-=b.x;
+        this.y-=b.y;
+    };
+    this.clone=function (b){
+        this.x=b.x;
+        this.y=b.y;
+    };
+    //坐标对应的位置
+    this.coordinate=function (i,j){
+        this.x=grid_width*j;
+        this.y=grid_width*i;
+    };
+}
 // 格子对象
-function Grid(x, y, n) {
-    this.x = x;//格子x坐标
-    this.y = y;//格子y坐标
-    this.number = n;//格子的数字
-    this.color = colors[n % 11];//格子的颜色
-    this.actions = [];//动作对象
+function Grid(nowPosition,number) {
+    this.nowPosition=nowPosition;//格子目前所在的位置
+    this.goalPosition = nowPosition;//格子要到指定的位置
+    //this.speed=new vector2(0,0);//移动的速度,单位px/ms；
+    this.surplusTime=0;//剩余时间
+    this.number = number;//格子的数字
+    this.color = colors[number % 11];//格子的颜色
 
+    //dt代表dt时间后，单位毫秒,返回是否到达
+    this.moveTime = function (dt) {
+        var flag=false;
+        if(dt>=this.surplusTime){
+            this.surplusTime=0;
+            this.nowPosition.clone(this.goalPosition);
+            flag=true;
+        }else{
+            var tm=new vector2(0,0);
+            tm.clone(this.goalPosition);
+            tm.sub(this.nowPosition);
+            tm.mul(dt/this.surplusTime);
+            this.nowPosition.add(tm);
+            this.surplusTime-=dt;
+            console.log("surplusTime  "+this.surplusTime);
+        }
+        this.draw();
+        return flag;
+    };
+    //移动到目标位置
+    this.moveGoalPosition=function (goalPosition,surplusTime){
+        this.goalPosition.clone(goalPosition);
+        this.surplusTime=surplusTime;
+    };
+    //设置数字和颜色
+    this.setNumber=function (number){
+        this.number=number;
+        this.color = colors[this.number % 11];
+    }
     //绘制格子
-    this.rendering = function () {
+    this.draw = function () {
         canvas_ctx.fillStyle = this.color;
-        canvas_ctx.fillRect(start_x + this.x, start_y + this.y, grid_offset, grid_offset);
+        canvas_ctx.fillRect(start_x + this.nowPosition.x, start_y + this.nowPosition.y, grid_offset, grid_offset);
 
         var px = 30, py = 70;
         canvas_ctx.fillStyle = '#000000';
@@ -33,138 +90,24 @@ function Grid(x, y, n) {
         if (this.number > 64) {
             if (this.number > 512) {
                 canvas_ctx.font = "40px 宋体";
-                canvas_ctx.fillText(this.number.toString(), start_x + this.x + px - 20, start_y + this.y + py - 10);
+                canvas_ctx.fillText(this.number.toString(), start_x + this.nowPosition.x + px - 20, start_y + this.nowPosition.y + py - 10);
             } else {
                 canvas_ctx.font = "45px 宋体";
-                canvas_ctx.fillText(this.number.toString(), start_x + this.x + px - 15, start_y + this.y + py - 10);
+                canvas_ctx.fillText(this.number.toString(), start_x + this.nowPosition.x + px - 15, start_y + this.nowPosition.y + py - 10);
             }
         } else if (this.number < 16) {
             canvas_ctx.font = "60px 宋体";
-            canvas_ctx.fillText(this.number.toString(), start_x + this.x + px, start_y + this.y + py);
+            canvas_ctx.fillText(this.number.toString(), start_x + this.nowPosition.x + px, start_y + this.nowPosition.y + py);
         } else {
             canvas_ctx.font = "50px 宋体";
-            canvas_ctx.fillText(this.number.toString(), start_x + this.x + px - 10, start_y + this.y + py - 10);
+            canvas_ctx.fillText(this.number.toString(), start_x + this.nowPosition.x + px - 10, start_y + this.nowPosition.y + py - 10);
         }
-    };
-
-    //执行动作
-    this.executeActions = function (dt) {
-        var i = this.actions.length;
-        while (i--) {
-            this.actions[i].execute(this, dt);
-            if (this.actions[i].done(this)) {
-                this.actions.splice(i, 1);
-            }
-        }
-    };
-
-    //设置数字
-    this.setNumber = function (number) {
-        this.number = number;
-        this.color = colors[number % 11];
-    };
-
-    this.update = function (dt) {
-
-        // 动作
-        this.executeActions(dt);
-
-        // 渲染
-        this.rendering();
-    };
-
-    //增加一个动作
-    this.runAction = function (actionObj) {
-        this.actions.push(actionObj);
     };
 }
-
-// MoveTo动作对象
-function MoveTo(src_x, src_y, dst_x, dst_y, duration) {
-    this.dx = (dst_x - src_x) / duration;
-    this.dy = (dst_y - src_y) / duration;
-    this.dst_x = dst_x;
-    this.dst_y = dst_y;
-    this.duration = duration;
-
-    this.execute = function (obj, dt) {
-        if (obj.x < this.dst_x) {
-            obj.x += this.dx * dt;
-        }
-        if (obj.y < this.dst_y) {
-            obj.y += this.dy * dt;
-        }
-    };
-
-    this.done = function (obj) {
-        return obj.x === dst_x && obj.y === dst_y;
-    };
-}
-
-// MoveBy动作对象
-function MoveBy(dx, dy, duration) {
-    this.dx = dx;
-    this.dy = dy;
-    this.total_x = dx;
-    this.total_y = dy;
-    this.duration = duration;
-
-    this.execute = function (obj, dt) {
-        if (Math.abs(this.total_x) > Math.abs(this.dx / duration * dt)) {
-            obj.x += this.dx / duration * dt;
-            this.total_x -= this.dx / duration * dt;
-        } else {
-            obj.x += this.total_x;
-            this.total_x = 0;
-        }
-
-        if (Math.abs(this.total_y) > Math.abs(this.dy / duration * dt)) {
-            obj.y += this.dy / duration * dt;
-            this.total_y -= this.dy / duration * dt;
-        } else {
-            obj.y += this.total_y;
-            this.total_y = 0;
-        }
-    };
-
-    this.done = function (obj) {
-        return Math.abs(this.total_x) >= Math.abs(this.dx) && Math.abs(this.total_y) >= Math.abs(this.dy);
-    };
-
-}
-
 // 清空格子 --abandoned
 function clearGrid(i, j) {
     grids[i][j] = null;
 }
-
-// 绘制数字, 在i, j处绘制2的n次方数字 --abandoned
-function drawNumber(i, j, n) {
-
-    canvas_ctx.fillStyle = colors[n % 10];
-    canvas_ctx.fillRect(start_x + grid_width * i, start_y + grid_width * j, grid_offset, grid_offset);
-
-    var px = 30, py = 70;
-    var number = Math.pow(2, n);
-    canvas_ctx.fillStyle = '#000000';
-    // 针对不同的幂使用不同大小的字体
-    if (n > 6) {
-        if (n > 9) {
-            canvas_ctx.font = "40px 宋体";
-            canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px - 20, start_y + grid_width * j + py - 10);
-        } else {
-            canvas_ctx.font = "45px 宋体";
-            canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px - 15, start_y + grid_width * j + py - 10);
-        }
-    } else if (n < 4) {
-        canvas_ctx.font = "60px 宋体";
-        canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px, start_y + grid_width * j + py);
-    } else {
-        canvas_ctx.font = "50px 宋体";
-        canvas_ctx.fillText(number.toString(), start_x + grid_width * i + px - 10, start_y + grid_width * j + py - 10);
-    }
-}
-
 // 绘制棋盘
 function drawBoard() {
     // 绘制背景
@@ -211,16 +154,21 @@ function drawScore() {
     canvas_ctx.font = "40px 宋体";
     canvas_ctx.fillText(s.toString(), score_x, score_y + 60);
 }
-
 // 绘制有所格子
 function drawGrids(dt) {
     var i, j;
+    var flag=true;
     for (i = 0; i < 4; ++i) {
         for (j = 0; j < 4; ++j) {
             if (grids[i][j] !== null) {
-                grids[i][j].update(dt);
+                if(!grids[i][j].moveTime(dt)){
+                    flag=false;
+                }
             }
         }
+    }
+    if(flag){
+        clearInterval(interval);
     }
 }
 
@@ -231,10 +179,11 @@ function creatrec() {
     var p = 10;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            if (table[i][j] === -1) {
+            if (grids[i][j] ==null) {
                 var n = parseInt(Math.random() * p);
                 if (n === 0 && f < 4) {
-                    table[i][j] = parseInt(Math.random() * 2) + 1;
+                    var number=parseInt(Math.random() * 2) + 1;
+                    grids[i][j]=new grids(new vector2(i * grid_width, j* grid_width),number);
                     // drawNumber(j, i, table[i][j]);
                     f++;
                 }
@@ -260,142 +209,65 @@ function generateNumber() {
 
     if (emptyTable.length !== 0) {
         var k = parseInt(Math.random() * emptyTable.length);
-        grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width, 2);
+        grids[emptyTable[k][0]][emptyTable[k][1]] = new Grid(new vector2(emptyTable[k][1] * grid_width, emptyTable[k][0] * grid_width), 2);
     }
 }
 
 // 响应按键
-function upUpdate() {
+function update(direction) {
     var i, j, p;
-
+    var gj,gi,nj,ni;
     // 格子移动
     for (j = 0; j < 4; ++j) {
         // 聚合
         p = 0;
-        for (i = 1; i < 4;) {
-            if (i === p || grids[i][j] === null) {
+        for (i = 1; i < 4; ) {
+            
+            if(direction=="up"||direction=="left"){
+                gi=p;
+                ni=i;
+            }else{
+                ni=3-i;
+                gi=3-p;
+            }
+            var tmp;
+            gj=j;
+            nj=j;
+            if(direction=="up"||direction=="down"){
+                //什么都不做
+            }else{
+                tmp=gi;
+                gi=gj;
+                gj=tmp;
+
+                tmp=ni;
+                ni=nj;
+                nj=tmp;
+            }
+
+            
+            if (i === p || grids[ni][nj] === null) {
+                i++;
+                continue;
+            }
+            var goalPosition=new vector2(0,0);
+            goalPosition.coordinate(gi,gj);
+            // p指向null,最上面的(grids[gi][gj])为空则把下面第一个(grids[ni][nj])移到最上面
+            if (grids[gi][gj] === null) {
+                grids[gi][gj] = grids[ni][nj];
+                grids[ni][nj] = null;
+                grids[gi][gj].moveGoalPosition(goalPosition,duration);
                 ++i;
-                continue;
-            }
-
-            // p指向null
-            if (grids[p][j] === null) {
-                grids[p][j] = grids[i][j];
-                grids[i][j] = null;
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
-                ++i;
-            } else if (grids[i][j].number === grids[p][j].number) {
+            } else if (grids[ni][nj].number === grids[gi][gj].number) {
                 // 如果相等
-                grids[p][j] = grids[i][j];
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
-                grids[p][j].setNumber(grids[p][j].number * 2);
-                grids[i][j] = null;
+                grids[gi][gj] = grids[ni][nj];
+                grids[gi][gj].setNumber(grids[gi][gj].number*2);
+                grids[gi][gj].moveGoalPosition(goalPosition,duration);
+                grids[ni][nj] = null;
                 ++i;
                 ++p;
             } else {
                 ++p;
-            }
-        }
-    }
-}
-
-function downUpdate() {
-    var i, j, p;
-
-    // 格子移动
-    for (j = 0; j < 4; ++j) {
-        // 聚合
-        p = 3;
-        for (i = 2; i >= 0;) {
-            if (i === p || grids[i][j] === null) {
-                --i;
-                continue;
-            }
-
-            // p指向null
-            if (grids[p][j] === null) {
-                grids[p][j] = grids[i][j];
-                grids[i][j] = null;
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
-                --i;
-            } else if (grids[i][j].number === grids[p][j].number) {
-                // 如果相等
-                grids[p][j] = grids[i][j];
-                grids[p][j].runAction(new MoveBy(0, -grid_width * (i - p), duration));
-                grids[p][j].setNumber(grids[p][j].number * 2);
-                grids[i][j] = null;
-                --i;
-                --p;
-            } else {
-                --p;
-            }
-        }
-    }
-}
-
-function leftUpdate() {
-    var i, j, p;
-
-    // 格子移动
-    for (i = 0; i < 4; ++i) {
-        // 聚合
-        p = 0;
-        for (j = 1; j < 4;) {
-            if (j === p || grids[i][j] === null) {
-                ++j;
-                continue;
-            }
-
-            // p指向null
-            if (grids[i][p] === null) {
-                grids[i][p] = grids[i][j];
-                grids[i][j] = null;
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
-                ++j;
-            } else if (grids[i][j].number === grids[i][p].number) {
-                // 如果相等
-                grids[i][p] = grids[i][j];
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
-                grids[i][p].setNumber(grids[i][p].number * 2);
-                grids[i][j] = null;
-                ++j;
-                ++p;
-            } else {
-                ++p;
-            }
-        }
-    }
-}
-
-function rightUpdate() {
-    var i, j, p;
-
-    // 格子移动
-    for (i = 0; i < 4; ++i) {
-        // 聚合
-        p = 3;
-        for (j = 2; j >= 0;) {
-            if (j === p || grids[i][j] === null) {
-                --j;
-                continue;
-            }
-
-            // p指向null
-            if (grids[i][p] === null) {
-                grids[i][p] = grids[i][j];
-                grids[i][j] = null;
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
-                --j;
-            } else if (grids[i][j].number === grids[i][p].number) {
-                // 如果相等
-                grids[i][p] = grids[i][j];
-                grids[i][p].runAction(new MoveBy(-grid_width * (j - p), 0, duration));
-                grids[i][p].setNumber(grids[i][p].number * 2);
-                grids[i][j] = null;
-                --j;
-                --p;
-            } else {
-                --p;
             }
         }
     }
@@ -409,8 +281,8 @@ function gameOver() {
             if (grids[i][j] === null) {
                 return false;
             } else if ((i < 3 && j < 3) &&
-                (grids[i + 1][j] !== null && grids[i][j].number === grids[i + 1][j].number ||
-                (grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number))) {
+                       (grids[i + 1][j] !== null && grids[i][j].number === grids[i + 1][j].number ||
+                       (grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number))) {
                 return false;
             } else if (i === 3 && j < 3 && grids[i][j + 1] !== null && grids[i][j].number === grids[i][j + 1].number) {
                 return false;
@@ -421,33 +293,34 @@ function gameOver() {
     }
     return true;
 }
-
 //键盘事件
 document.onkeydown = function (event) {
+
     // 在移动前记录原先的状态以用于在状态未改变时不产生新块
     var temp = [];
     var i, j;
     for (i = 0; i < 4; i++) {
         temp[i] = [];
         for (j = 0; j < 4; j++) {
-            temp[i][j] = grids[i][j];
+            if(grids[i][j]!=null)
+                temp[i][j] = grids[i][j].number;
+            else temp[i][j]=null;
         }
     }
-
     /// 监听键盘事件
     var e = event || window.event || arguments.callee.caller.arguments[0];
 
     if (e && e.keyCode === 38) { //up
-        upUpdate();
+        update("up");
     }
     if (e && e.keyCode === 40) { // down
-        downUpdate();
+        update("down");
     }
     if (e && e.keyCode === 37) { // left
-        leftUpdate();
+        update("left");
     }
     if (e && e.keyCode === 39) { // right
-        rightUpdate();
+        update("right");
     }
 
     if (gameOver()) {
@@ -457,15 +330,26 @@ document.onkeydown = function (event) {
     var flag = false;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            if (temp[i][j] !== grids[i][j]) {
-                flag = true;
-                break;
+            if(grids[i][j]!=null){
+                if(temp[i][j] !== grids[i][j].number){
+                    flag = true;
+                    break;
+                }
+            }else{
+                if(temp[i][j] !== grids[i][j]){
+                    flag = true;
+                    break;
+                }
             }
+
         }
     }
-
+    // Todo: remember the status when status change generate number.
+    //var flag = true;
     if (flag) {
         generateNumber();
+        last_time=null;
+        interval=setInterval("drawOneFrame()",16.6);
     }
 };
 
@@ -486,27 +370,25 @@ function init() {
     // 生成初始数字
     generateNumber();
     generateNumber();
-    // window.requestAnimationFrame(gameLoop);
-    // setTimeout("gameLoop()", 1000);
-    setInterval("gameLoop()", 16.6);
+    interval=setInterval("drawOneFrame()",16.6);
 }
 
 // 游戏循环
-var last_time;
-function gameLoop() {
+var last_time=null;
+//绘制一帧图像
+function drawOneFrame() {
     // 绘制路径开始
     canvas_ctx.beginPath();
 
     var time = Date.now();
     var dt;
-    if (last_time === undefined) {
+    if (last_time === null) {
         last_time = time;
     }
     dt = time - last_time;
-    drawBoard();
-    drawScore();
-    drawGrids(dt);
-
-    //requestAnimationFrame(gameLoop);
+    console.log(dt);
+    drawBoard();//画棋盘
+    drawScore();//画分数
+    drawGrids(dt);//画格子
     last_time = time;
 }
