@@ -10,8 +10,8 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
-var duration=200;//渲染时间,单位ms
-var fps=180;//每秒刷新率
+var duration=150;//渲染时间,单位ms
+var fps=100;//每秒刷新率
 var oneFrameTime=1000.0/fps;//每一帧刷新时间,ms
 var interval;
 
