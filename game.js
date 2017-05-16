@@ -10,7 +10,9 @@ var canvas_ctx;
 var score_x = start_x + container_width * 1.2;//分数的x坐标
 var score_y = start_y * 1.5;//分数的y坐标
 var grids = []; // 格子
-var duration=2000;//渲染时间
+var duration=500;//渲染时间
+var fps=100;//每秒刷新率
+var oneFrameTime=1000.0/fps;//每一帧刷新时间
 var interval;
 
 //二维向量
@@ -30,9 +32,11 @@ function vector2(x,y) {
         this.x-=b.x;
         this.y-=b.y;
     };
-    this.clone=function (b){
-        this.x=b.x;
-        this.y=b.y;
+    this.clone=function (){
+        var b=new vector2();
+        b.x=this.x;
+        b.y=this.y;
+        return b;
     };
     //坐标对应的位置
     this.coordinate=function (i,j){
@@ -43,7 +47,7 @@ function vector2(x,y) {
 // 格子对象
 function Grid(nowPosition,number) {
     this.nowPosition=nowPosition;//格子目前所在的位置
-    this.goalPosition = nowPosition;//格子要到指定的位置
+    this.goalPosition = nowPosition.clone();//格子要到指定的位置
     //this.speed=new vector2(0,0);//移动的速度,单位px/ms；
     this.surplusTime=0;//剩余时间
     this.number = number;//格子的数字
@@ -54,23 +58,24 @@ function Grid(nowPosition,number) {
         var flag=false;
         if(dt>=this.surplusTime){
             this.surplusTime=0;
-            this.nowPosition.clone(this.goalPosition);
+            this.nowPosition=this.goalPosition.clone();
+            //console.log("surplusTime  "+this.surplusTime);
             flag=true;
         }else{
             var tm=new vector2(0,0);
-            tm.clone(this.goalPosition);
+            tm=this.goalPosition.clone();
             tm.sub(this.nowPosition);
             tm.mul(dt/this.surplusTime);
             this.nowPosition.add(tm);
             this.surplusTime-=dt;
-            console.log("surplusTime  "+this.surplusTime);
+            //console.log("surplusTime  "+this.surplusTime);
         }
         this.draw();
         return flag;
     };
     //移动到目标位置
     this.moveGoalPosition=function (goalPosition,surplusTime){
-        this.goalPosition.clone(goalPosition);
+        this.goalPosition=goalPosition.clone();
         this.surplusTime=surplusTime;
     };
     //设置数字和颜色
@@ -154,7 +159,7 @@ function drawScore() {
     canvas_ctx.font = "40px 宋体";
     canvas_ctx.fillText(s.toString(), score_x, score_y + 60);
 }
-// 绘制有所格子
+// 绘制有所格子,返回true代表绘制完成
 function drawGrids(dt) {
     var i, j;
     var flag=true;
@@ -167,9 +172,7 @@ function drawGrids(dt) {
             }
         }
     }
-    if(flag){
-        clearInterval(interval);
-    }
+    return flag;
 }
 
 // 随机生成数字 --abandoned
@@ -349,7 +352,7 @@ document.onkeydown = function (event) {
     if (flag) {
         generateNumber();
         last_time=null;
-        interval=setInterval("drawOneFrame()",16.6);
+        setTimeout("drawOneFrame()",oneFrameTime);
     }
 };
 
@@ -370,7 +373,7 @@ function init() {
     // 生成初始数字
     generateNumber();
     generateNumber();
-    interval=setInterval("drawOneFrame()",16.6);
+    setTimeout("drawOneFrame()",oneFrameTime);
 }
 
 // 游戏循环
@@ -389,6 +392,9 @@ function drawOneFrame() {
     console.log(dt);
     drawBoard();//画棋盘
     drawScore();//画分数
-    drawGrids(dt);//画格子
+    var isComplete=drawGrids(dt);//画格子
+    if(!isComplete){
+        setTimeout("drawOneFrame()",oneFrameTime);
+    }
     last_time = time;
 }
